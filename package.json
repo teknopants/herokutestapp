@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server.js"
   },
-  "author": "Veau Blyth",
+  "author": "Beau Blyth",
   "license": "ISC",
   "dependencies": {
     "express": "^4.17.1",

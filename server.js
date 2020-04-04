@@ -1,18 +1,27 @@
+/**  
+ * Server Script
+ * @author Beau Blyth
+*/
+
 // Dependencies
 var express = require('express');
 var http = require('http');
 var path = require('path');
 var socketIO = require('socket.io');
 
+const Game = require('./server/Game')
+
+// Initialization
 var app = express();
 var server = http.Server(app);
 var io = socketIO(server);
+const game = new Game();
 
 app.set('port', 5000);
-app.use('/static', express.static(__dirname + '/static'));
+app.use('/static', express.static(path.join(__dirname + '/static')));
 
 // Routing
-app.get('/', function (request, response) {
+app.get('/', (request, response) => {
     response.sendFile(path.join(__dirname, 'index.html'));
 });
 
@@ -48,6 +57,8 @@ io.on('connection', function (socket) {
 
 });
 
-setInterval(function () {
+setInterval(() => {
+    game.Update();
+    game.SendState();
     io.sockets.emit('state', players);
 }, 1000 / 60);
