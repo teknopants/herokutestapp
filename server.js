@@ -69,6 +69,6 @@ setInterval(function () {
 
 
 setInterval(function () {
-    var _currentTime = (new Date()).getTime();
-    console.log("server active : " + _currentTime);
+    var _seconds = (new Date()).getTime() / 1000;
+    console.log("server active for " + _seconds);
 }, 10000);
