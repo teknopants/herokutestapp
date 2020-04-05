@@ -4,17 +4,16 @@
   "description": "",
   "private": true,
   "scripts": {
-    "start": "node server.js"
+    "test": "no test",
+    "build": "node server.js"
   },
   "author": "Beau Blyth",
   "license": "ISC",
   "dependencies": {
+    "bufferutil": "^4.0.1",
     "express": "^4.17.1",
     "socket.io": "^2.3.0",
-    "socket.io-client": "^2.3.0"
-  },
-  "devDependencies": {
-    "webpack": "^4.42.1",
-    "webpack-cli": "^3.3.11"
+    "socket.io-client": "^2.3.0",
+    "utf-8-validate": "^5.0.2"
   }
 }
