@@ -66,6 +66,5 @@ io.on('connection', function (socket) {
 
 
 setInterval(function () {
-    console.log("server - emitting state")
     io.sockets.emit('state', players)
 }, 1000 / 60)
