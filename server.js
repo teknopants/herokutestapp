@@ -8,6 +8,8 @@ const express = require('express')
 const http = require('http')
 const path = require('path')
 const socketIO = require('socket.io')
+const Game = require('./static/Game')
+const Constants = require('Constants')
 
 const PORT = process.env.PORT || 5000
 
@@ -16,6 +18,8 @@ const PORT = process.env.PORT || 5000
 const app = express()
 const server = http.Server(app)
 const io = socketIO(server)
+
+const game = new Game()
 
 app.set('port', PORT)
 app.use('/static', express.static(path.join(__dirname + '/static')))
@@ -27,22 +31,23 @@ app.get('/', (request, response) => {
 app.listen(PORT, () => console.log(`Listening on ${PORT}`))
 
 // Starts the server.
-server.listen(5000, function () {
-    console.log('Starting server on port 5000')
+server.listen(PORT, function () {
+    console.log('Starting server on port ' + PORT)
 })
 
 
 // Add the WebSocket handlers
 var players = {}
-io.on('connection', function (socket) {
+io.on('connection', socket => {
 
     socket.on('disconnect', function () {
         console.log("server - player disconnected");
         // remove disconnected player
     })
 
-    socket.on('new player', function () {
+    socket.on(Constants.SOCKET_NEW_PLAYER, function () {
         console.log("server - new player");
+        game.addNewPlayer("Robot-" + socket, socket)
         players[socket.id] = {
             x: 300,
             y: 300
@@ -61,10 +66,10 @@ io.on('connection', function (socket) {
         player.y = position.y + nextPosition.y
         console.log("server - setting player " + socket.i + " position to " + player.x + " , " + player.y);
     })
-
 })
 
-
-setInterval(function () {
-    io.sockets.emit('state', players)
+setInterval(() => {
+    //io.sockets.emit('state', players)
+    game.update()
+    game.sendState()
 }, 1000 / 60)
