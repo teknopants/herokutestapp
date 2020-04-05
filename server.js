@@ -57,7 +57,7 @@ io.on('connection', function (socket) {
         }
         player.x = position.x + nextPosition.x
         player.y = position.y + nextPosition.y
-
+        console.log("server - setting player " + socket.i + " position to " + player.x + " , " + player.y);
     })
 
 })

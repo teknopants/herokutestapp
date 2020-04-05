@@ -235,6 +235,7 @@ function ProcessKey(keyState) {
     if (keyState == KEYSTATE_RELEASED) {
         keyState = KEYSTATE_NONE; // released set to nothing
     }
+    console.log("client - new keystate = " + keyState);
     return keyState;
 }
 function CheckPressed(keyState) {
