@@ -3,19 +3,27 @@
  * @author Beau Blyth
 */
 
+console.log("server.js starting");
+
 // Dependencies
+console.log("loading express");
 const express = require('express');
 
+console.log("loading http");
 const http = require('http');
+console.log("loading path");
 const path = require('path');
+console.log("loading socket.io");
 const socketIO = require('socket.io');
 
 
 // Initialization
+console.log("app = express()");
 const app = express();
 const server = http.Server(app);
 const io = socketIO(server);
 
+console.log("setting port 5000");
 app.set('port', 5000);
 app.use('/static', express.static(path.join(__dirname + '/static')));
 
