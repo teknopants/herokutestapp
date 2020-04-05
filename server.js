@@ -25,19 +25,23 @@ const io = socketIO(server);
 
 console.log("setting port 5000");
 app.set('port', 5000);
+console.log("use static");
 app.use('/static', express.static(path.join(__dirname + '/static')));
 
+console.log("routing");
 // Routing
 app.get('/', (request, response) => {
     response.sendFile(path.join(__dirname, 'static/index.html'));
 });
 
+console.log("start server");
 // Starts the server.
 server.listen(5000, function () {
     console.log('Starting server on port 5000');
 });
 
 
+console.log("add websocket handlers");
 // Add the WebSocket handlers
 var players = {};
 io.on('connection', function (socket) {
@@ -69,6 +73,8 @@ io.on('connection', function (socket) {
 });
 
 
+console.log("set interval");
 setInterval(function () {
+    console.log("sending state");
     io.sockets.emit('state', players);
 }, 1000 / 60);
