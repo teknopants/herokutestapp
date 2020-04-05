@@ -4,7 +4,8 @@
   "description": "",
   "private": true,
   "scripts": {
-    "test": "no test"
+    "test": "no test",
+    "start": "node server.js"
   },
   "author": "Beau Blyth",
   "license": "ISC",
