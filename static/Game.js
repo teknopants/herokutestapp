@@ -123,6 +123,7 @@ setInterval(function () {
 
     // Move Player
     if (VectorMagnitude(_inputDirection) > 0.1) {
+        console.log("local player moving in direction " + _inputDirection + " with speed " + _spd);
         playerSpeed = AddMotionVector(playerSpeed, _spd, _inputDirection, _maxSpd);
     }
 
@@ -235,7 +236,6 @@ function ProcessKey(keyState) {
     if (keyState == KEYSTATE_RELEASED) {
         keyState = KEYSTATE_NONE; // released set to nothing
     }
-    console.log("client - new keystate = " + keyState);
     return keyState;
 }
 function CheckPressed(keyState) {

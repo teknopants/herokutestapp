@@ -37,10 +37,12 @@ var players = {}
 io.on('connection', function (socket) {
 
     socket.on('disconnect', function () {
+        console.log("server - player disconnected");
         // remove disconnected player
     })
 
     socket.on('new player', function () {
+        console.log("server - new player");
         players[socket.id] = {
             x: 300,
             y: 300
@@ -64,10 +66,6 @@ io.on('connection', function (socket) {
 
 
 setInterval(function () {
+    console.log("server - emitting state")
     io.sockets.emit('state', players)
 }, 1000 / 60)
-
-
-setInterval(function () {
-    console.log("server active")
-}, 10000)
