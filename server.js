@@ -3,45 +3,35 @@
  * @author Beau Blyth
 */
 
-console.log("server.js starting");
+const PORT = process.env.PORT || 5000
 
 // Dependencies
-console.log("loading express");
 const express = require('express');
 
-console.log("loading http");
 const http = require('http');
-console.log("loading path");
 const path = require('path');
-console.log("loading socket.io");
 const socketIO = require('socket.io');
 
 
 // Initialization
-console.log("app = express()");
 const app = express();
 const server = http.Server(app);
 const io = socketIO(server);
 
-console.log("setting port 5000");
-app.set('port', 5000);
-console.log("use static");
+app.set('port', PORT);
 app.use('/static', express.static(path.join(__dirname + '/static')));
 
-console.log("routing");
 // Routing
 app.get('/', (request, response) => {
-    response.sendFile(path.join(__dirname, 'static/index.html'));
-});
+    response.sendFile(path.join(__dirname, 'views/index.html'))
+})
 
-console.log("start server");
 // Starts the server.
 server.listen(5000, function () {
     console.log('Starting server on port 5000');
 });
 
 
-console.log("add websocket handlers");
 // Add the WebSocket handlers
 var players = {};
 io.on('connection', function (socket) {
@@ -73,8 +63,11 @@ io.on('connection', function (socket) {
 });
 
 
-console.log("set interval");
 setInterval(function () {
-    console.log("sending state");
     io.sockets.emit('state', players);
 }, 1000 / 60);
+
+
+setInterval(function () {
+    console.log("server active : " + Date().getTime());
+}, 10000);
