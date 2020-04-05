@@ -12,17 +12,6 @@ const Vector2 = {
     }
 }
 
-var canvas = document.getElementById('canvas');
-canvas.width = 800;
-canvas.height = 600;
-
-
-var socket = io();
-socket.on('message', function (data) {
-    console.log(data);
-});
-
-
 var keyStates = {
     right: KEYSTATE_NONE,
     left: KEYSTATE_NONE,
@@ -35,11 +24,20 @@ var playerSpeed = {
     y: 0
 }
 var playerPosition = {
-    x: Math.random() * canvas.width,
-    y: Math.random() * canvas.height
+    x: Math.random() * 400,
+    y: Math.random() * 400
 }
 
-var lastUpdateTime = (new Date()).getTime();
+var timeStamp = (new Date()).getTime();
+
+// Socket Stuff
+var socket = io();
+
+socket.emit('new player');
+
+function sendState() {
+    socket.emit('playerPosition', playerPosition, playerSpeed, (new Date()).getTime());
+}
 
 
 document.addEventListener('keyup', function (event) {
@@ -82,8 +80,8 @@ document.addEventListener('keydown', function (event) {
 
 function GetTimeDifference() {
     var currentTime = (new Date()).getTime();
-    var timeDifference = (currentTime - lastUpdateTime) / 1000;
-    lastUpdateTime = currentTime;
+    var timeDifference = (currentTime - timeStamp) / 1000;
+    timeStamp = currentTime;
     return timeDifference;
 }
 
@@ -112,6 +110,7 @@ setInterval(function () {
 
     if (CheckHeld(keyStates.right)) {
         _inputDirection.x = 1;
+        console.log("pressing right");
     }
     if (CheckHeld(keyStates.left)) {
         _inputDirection.x = -1;
@@ -138,16 +137,14 @@ setInterval(function () {
     keyStates.left = ProcessKey(keyStates.left);
     keyStates.down = ProcessKey(keyStates.down);
 
-    SendState();
+    sendState();
 
 }, 1000 / 60);
 
-
-function sendState() {
-    socket.emit('playerPosition', playerPosition);
-}
-
 // Draw Game
+var canvas = document.getElementById('canvas');
+canvas.width = 800;
+canvas.height = 600;
 var context = canvas.getContext('2d');
 
 socket.on('state', function (players) {
@@ -163,9 +160,8 @@ socket.on('state', function (players) {
     //local player
     context.fillStyle = 'red';
     context.beginPath();
-    context.arc(playerPosition.x, playerPosition.y, 10, 0, 2 * Math.PI);
+    context.arc(playerPosition.x, playerPosition.y, 5, 0, 2 * Math.PI);
     context.fill();
-
 });
 
 

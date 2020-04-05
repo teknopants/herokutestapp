@@ -4,18 +4,15 @@
 */
 
 // Dependencies
-var express = require('express');
-var http = require('http');
-var path = require('path');
-var socketIO = require('socket.io');
-
-const Game = require('./server/Game')
+const express = require('express')
+const http = require('http');
+const path = require('path');
+const socketIO = require('socket.io');
 
 // Initialization
-var app = express();
-var server = http.Server(app);
-var io = socketIO(server);
-const game = new Game();
+const app = express();
+const server = http.Server(app);
+const io = socketIO(server);
 
 app.set('port', 5000);
 app.use('/static', express.static(path.join(__dirname + '/static')));
@@ -46,19 +43,22 @@ io.on('connection', function (socket) {
         };
     });
 
-
-    socket.on('playerPosition', function (data) {
+    socket.on('playerPosition', function (position, speed, timeStamp) {
+        var _currentTime = (new Date()).getTime();
+        var _timeElapsed = (_currentTime - timeStamp) / 1000;
         var player = players[socket.id] || {};
-
-        player.x = data.x;
-        player.y = data.y;
+        var nextPosition = {
+            x: _timeElapsed * speed.x,
+            y: _timeElapsed * speed.y
+        }
+        player.x = position.x + nextPosition.x;
+        player.y = position.y + nextPosition.y;
 
     });
 
 });
 
-setInterval(() => {
-    game.Update();
-    game.SendState();
+
+setInterval(function () {
     io.sockets.emit('state', players);
 }, 1000 / 60);
