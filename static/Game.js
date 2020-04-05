@@ -110,7 +110,6 @@ setInterval(function () {
 
     if (CheckHeld(keyStates.right)) {
         _inputDirection.x = 1;
-        console.log("pressing right");
     }
     if (CheckHeld(keyStates.left)) {
         _inputDirection.x = -1;

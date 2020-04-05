@@ -4,17 +4,15 @@
   "description": "",
   "private": true,
   "scripts": {
-    "test": "no test",
-    "build": "node server.js"
+    "test": "no test"
   },
   "author": "Beau Blyth",
   "license": "ISC",
   "dependencies": {
-    "@tarp/require": "^1.4.3",
-    "bufferutil": "^4.0.1",
     "express": "^4.17.1",
     "socket.io": "^2.3.0",
     "socket.io-client": "^2.3.0",
+    "bufferutil": "^4.0.1",
     "utf-8-validate": "^5.0.2"
   }
 }

@@ -4,10 +4,12 @@
 */
 
 // Dependencies
-const express = require('express')
+const express = require('express');
+
 const http = require('http');
 const path = require('path');
 const socketIO = require('socket.io');
+
 
 // Initialization
 const app = express();
