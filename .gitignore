@@ -1,2 +1,3 @@
 /_example_tankanarchy-master/
-/node_modules/
+/node_modules/*
+node_modules

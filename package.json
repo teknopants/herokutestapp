@@ -2,7 +2,10 @@
   "name": "onlinegametutorial",
   "version": "1.0.0",
   "description": "",
-  "private": true,
+  "engines": {
+    "node": "10.16.3",
+    "npm": "6.9.0"
+  },
   "scripts": {
     "test": "no test",
     "build": "node server.js"
