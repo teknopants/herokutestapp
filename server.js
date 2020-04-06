@@ -37,7 +37,8 @@ io.on('connection', socket => {
     socket.on("new player", function () {
         players[socket.id] = {
             x: 300,
-            y: 300
+            y: 300,
+            ping: 0
         }
     })
 
@@ -53,6 +54,7 @@ io.on('connection', socket => {
         }
         player.x = position.x + nextPosition.x
         player.y = position.y + nextPosition.y
+        player.ping = _timeElapsed
     })
 })
 

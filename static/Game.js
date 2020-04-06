@@ -137,9 +137,11 @@ setInterval(function () {
     keyStates.left = ProcessKey(keyStates.left);
     keyStates.down = ProcessKey(keyStates.down);
 
-    sendState();
+}, 1000 / 60);
 
-}, 1000 / 120);
+setInterval(() => {
+    sendState();
+}, 1000 / 120)
 
 // Draw Game
 var canvas = document.getElementById('canvas');
@@ -151,12 +153,13 @@ socket.on('state', function (players) {
     context.clearRect(0, 0, canvas.width, canvas.height);
     context.fillStyle = 'green';
     for (var id in players) {
-        //if (id != socket.id) {
         var player = players[id];
+        if (id == socket.id) {
+            console.log("ping = " + players[id].ping)
+        }
         context.beginPath();
         context.arc(player.x, player.y, 10, 0, 2 * Math.PI);
         context.fill();
-        //}
     }
 
     //local player
