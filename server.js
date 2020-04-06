@@ -8,7 +8,6 @@ const express = require('express')
 const http = require('http')
 const path = require('path')
 const socketIO = require('socket.io')
-const Constants = require('Constants')
 
 const PORT = process.env.PORT || 5000
 
@@ -41,7 +40,7 @@ io.on('connection', socket => {
         // remove disconnected player
     })
 
-    socket.on(Constants.SOCKET_NEW_PLAYER, function () {
+    socket.on("new player", function () {
         console.log("server - new player");
         players[socket.id] = {
             x: 300,
