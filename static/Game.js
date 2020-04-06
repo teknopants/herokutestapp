@@ -137,11 +137,10 @@ setInterval(function () {
     keyStates.left = ProcessKey(keyStates.left);
     keyStates.down = ProcessKey(keyStates.down);
 
+    sendState();
+
 }, 1000 / 60);
 
-setInterval(() => {
-    sendState();
-}, 1000 / 120)
 
 // Draw Game
 var canvas = document.getElementById('canvas');
