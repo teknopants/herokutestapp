@@ -34,7 +34,6 @@ io.on('connection', socket => {
     })
 
     socket.on("new player", function () {
-        console.log("server - new player");
         players[socket.id] = {
             x: 300,
             y: 300
@@ -51,7 +50,6 @@ io.on('connection', socket => {
         }
         player.x = position.x + nextPosition.x
         player.y = position.y + nextPosition.y
-        console.log("server - setting player " + socket.i + " position to " + player.x + " , " + player.y);
     })
 })
 
