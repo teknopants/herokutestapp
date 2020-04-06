@@ -1,134 +1,252 @@
-/**
- * Game class on the server to manage the state of existing players and
- * and entities.
- * @author alvin@omgimanerd.tech (Alvin Lin)
- */
+const KEYSTATE_PRESSED = 1;
+const KEYSTATE_HELD = 2;
+const KEYSTATE_RELEASED = -1;
+const KEYSTATE_NONE = 0;
 
-const Bullet = require('./Bullet')
-const Player = require('./Player')
-const Powerup = require('./Powerup')
-
-const Constants = require('../lib/Constants')
-
-/**
- * Game class.
- */
-class Game {
-    /**
-     * Constructor for a Game object.
-     */
-    constructor() {
-        /**
-         * This is a Map containing all the connected socket ids and socket
-         * instances.
-         */
-        this.clients = new Map()
-        /**
-         * This is a Map containing all the connected socket ids and the players
-         * associated with them. This should always be parallel with sockets.
-         */
-        this.players = new Map()
-        this.projectiles = []
-        this.powerups = []
-
-        this.lastUpdateTime = 0
-        this.deltaTime = 0
-    }
-
-    /**
-     * Creates a new Game object.
-     * @return {Game}
-     */
-    static create() {
-        const game = new Game()
-        game.init()
-        return game
-    }
-
-    /**
-     * Initializes the game state.
-     */
-    init() {
-        this.lastUpdateTime = Date.now()
-    }
-
-    /**
-     * Creates a new player with the given name and ID.
-     * @param {string} name The display name of the player.
-     * @param {Object} socket The socket object of the player.
-     */
-    addNewPlayer(name, socket) {
-        this.clients.set(socket.id, socket)
-        this.players.set(socket.id, Player.create(name, socket.id))
-    }
-
-    /**
-     * Removes the player with the given socket ID and returns the name of the
-     * player removed.
-     * @param {string} socketID The socket ID of the player to remove.
-     * @return {string}
-     */
-    removePlayer(socketID) {
-        if (this.clients.has(socketID)) {
-            this.clients.delete(socketID)
+const Vector2 = {
+    Zero: function () {
+        return {
+            x: 0,
+            y: 0
         }
-        if (this.players.has(socketID)) {
-            const player = this.players.get(socketID)
-            this.players.delete(socketID)
-            return player.name
-        }
-    }
-
-    /**
-     * Returns the name of the player with the given socket id.
-     * @param {string} socketID The socket id to look up.
-     * @return {string}
-     */
-    getPlayerNameBySocketId(socketID) {
-        if (this.players.has(socketID)) {
-            return this.players.get(socketID).name
-        }
-    }
-
-    /**
-     * Updates the player with the given socket ID according to the input state
-     * object sent by the player's client.
-     * @param {string} socketID The socket ID of the player to update
-     * @param {Object} data The player's input state
-     */
-    updatePlayerOnInput(socketID, data) {
-        const player = this.players.get(socketID)
-        if (player) {
-            player.updateOnInput(data)
-            if (data.shoot && player.canShoot()) {
-                const projectiles = player.getProjectilesFromShot()
-                this.projectiles.push(...projectiles)
-            }
-        }
-    }
-
-    /**
-     * Updates the state of all the objects in the game.
-     */
-    update() {
-        const currentTime = Date.now()
-        this.deltaTime = currentTime - this.lastUpdateTime
-        this.lastUpdateTime = currentTime
-    }
-
-    /**
-     * Sends the state of the game to all connected players.
-     */
-    sendState() {
-        const players = [...this.players.values()]
-        this.clients.forEach((client, socketID) => {
-            const currentPlayer = this.players.get(socketID)
-            this.clients.get(socketID).emit(Constants.SOCKET_UPDATE, {
-                self: currentPlayer,
-                players: players,
-            })
-        })
     }
 }
 
-module.exports = Game
+var keyStates = {
+    right: KEYSTATE_NONE,
+    left: KEYSTATE_NONE,
+    up: KEYSTATE_NONE,
+    down: KEYSTATE_NONE
+}
+
+var playerSpeed = {
+    x: 0,
+    y: 0
+}
+var playerPosition = {
+    x: Math.random() * 400,
+    y: Math.random() * 400
+}
+
+var timeStamp = (new Date()).getTime();
+
+// Socket Stuff
+var socket = io();
+
+socket.emit('new player');
+
+function sendState() {
+    socket.emit('playerPosition', playerPosition, playerSpeed, (new Date()).getTime());
+}
+
+
+document.addEventListener('keyup', function (event) {
+    switch (event.keyCode) {
+        case 65: // A
+            keyStates.left = KEYSTATE_RELEASED;
+            break;
+        case 68: // D
+            keyStates.right = KEYSTATE_RELEASED;
+            break;
+        case 87: // W
+            keyStates.up = KEYSTATE_RELEASED;
+            break;
+        case 83: // S
+            keyStates.down = KEYSTATE_RELEASED;
+            break;
+    }
+});
+
+document.addEventListener('keydown', function (event) {
+    switch (event.keyCode) {
+        case 65: // A
+            if (keyStates.left <= 1)
+                keyStates.left = KEYSTATE_PRESSED;
+            break;
+        case 68: // D
+            if (keyStates.right <= 1)
+                keyStates.right = KEYSTATE_PRESSED;
+            break;
+        case 87: // W
+            if (keyStates.up <= 1)
+                keyStates.up = KEYSTATE_PRESSED;
+            break;
+        case 83: // S
+            if (keyStates.down <= 1)
+                keyStates.down = KEYSTATE_PRESSED;
+            break;
+    }
+});
+
+function GetTimeDifference() {
+    var currentTime = (new Date()).getTime();
+    var timeDifference = (currentTime - timeStamp) / 1000;
+    timeStamp = currentTime;
+    return timeDifference;
+}
+
+document.addEventListener('keyup', function (event) {
+    switch (event.keyCode) {
+        case 65: // A
+            break;
+        case 87: // W
+            break;
+        case 68: // D
+            break;
+        case 83: // S
+            break;
+    }
+});
+
+// Update
+setInterval(function () {
+
+    var _timeDifference = GetTimeDifference();
+
+    // input
+    var _spd = 60 * _timeDifference;
+    var _maxSpd = 10;
+    var _inputDirection = Vector2.Zero();
+
+    if (CheckHeld(keyStates.right)) {
+        _inputDirection.x = 1;
+    }
+    if (CheckHeld(keyStates.left)) {
+        _inputDirection.x = -1;
+    }
+    if (CheckHeld(keyStates.up)) {
+        _inputDirection.y = -1;
+    }
+    if (CheckHeld(keyStates.down)) {
+        _inputDirection.y = 1;
+    }
+
+    // Move Player
+    if (VectorMagnitude(_inputDirection) > 0.1) {
+        console.log("local player moving in direction " + _inputDirection + " with speed " + _spd);
+        playerSpeed = AddMotionVector(playerSpeed, _spd, _inputDirection, _maxSpd);
+    }
+
+    playerPosition.x += playerSpeed.x;
+    playerPosition.y += playerSpeed.y;
+    playerSpeed = Friction(playerSpeed, 1.05);
+
+    // process key states
+    keyStates.right = ProcessKey(keyStates.right);
+    keyStates.up = ProcessKey(keyStates.up);
+    keyStates.left = ProcessKey(keyStates.left);
+    keyStates.down = ProcessKey(keyStates.down);
+
+    sendState();
+
+}, 1000 / 60);
+
+// Draw Game
+var canvas = document.getElementById('canvas');
+canvas.width = 800;
+canvas.height = 600;
+var context = canvas.getContext('2d');
+
+socket.on('state', function (players) {
+    context.clearRect(0, 0, 800, 600);
+    context.fillStyle = 'green';
+    for (var id in players) {
+        var player = players[id];
+        context.beginPath();
+        context.arc(player.x, player.y, 10, 0, 2 * Math.PI);
+        context.fill();
+    }
+
+    //local player
+    context.fillStyle = 'red';
+    context.beginPath();
+    context.arc(playerPosition.x, playerPosition.y, 5, 0, 2 * Math.PI);
+    context.fill();
+});
+
+
+function AngleToVector(angle) {
+    angle = DegreesToRadians(angle);
+    return {
+        x: Math.cos(angle),
+        y: Math.sin(angle)
+    }
+}
+
+function DegreesToRadians(degrees) {
+    return degrees *= (Math.PI / 180);
+}
+
+function VectorMagnitude(vector2) {
+    var _x = vector2.x;
+    var _y = vector2.y;
+    return Math.sqrt(_x * _x + _y * _y);
+}
+
+function VectorNormalized(vector2) {
+    var _magnitude = VectorMagnitude(vector2);
+    var _x = vector2.x / _magnitude;
+    var _y = vector2.y / _magnitude;
+    return {
+        x: _x,
+        y: _y
+    }
+}
+
+// Motion Functions
+function AddMotion(speedVector, speed, direction, maxSpeed) {
+    var vector2 = AngleToVector(direction);
+    speedVector.x += vector2.x * speed;
+    speedVector.y += vector2.y * speed;
+    var _speedVectorMagnitude = VectorMagnitude(speedVector);
+
+    if (_speedVectorMagnitude > maxSpeed) {
+        speedVector = VectorNormalized(vector2);
+        speedVector.x *= maxSpeed;
+        speedVector.y *= maxSpeed;
+    }
+
+    return speedVector;
+}
+function AddMotionVector(speedVector, speed, vectorDirection, maxSpeed) {
+    speedVector.x += vectorDirection.x * speed;
+    speedVector.y += vectorDirection.y * speed;
+    var _speedVectorMagnitude = VectorMagnitude(speedVector);
+
+    if (_speedVectorMagnitude > maxSpeed) {
+        speedVector = VectorNormalized(speedVector);
+        speedVector.x *= maxSpeed;
+        speedVector.y *= maxSpeed;
+    }
+
+    return speedVector;
+}
+
+function Friction(vector2, friction) {
+    vector2.x /= friction;
+    vector2.y /= friction;
+    return vector2;
+}
+
+// Key Functions
+function ProcessKey(keyState) {
+    if (keyState == KEYSTATE_PRESSED) {
+        keyState = KEYSTATE_HELD; // pressed set to held
+    }
+    if (keyState == KEYSTATE_RELEASED) {
+        keyState = KEYSTATE_NONE; // released set to nothing
+    }
+    return keyState;
+}
+function CheckPressed(keyState) {
+    return keyState == KEYSTATE_PRESSED
+}
+function CheckHeld(keyState) {
+    return keyState == KEYSTATE_PRESSED || keyState == KEYSTATE_HELD
+}
+function CheckNone(keyState) {
+    return keyState == KEYSTATE_NONE
+}
+function CheckReleased(keyState) {
+    return keyState == KEYSTATE_RELEASED
+}

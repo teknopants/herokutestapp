@@ -8,18 +8,14 @@ const express = require('express')
 const http = require('http')
 const path = require('path')
 const socketIO = require('socket.io')
-const Game = require('./static/Game')
 const Constants = require('Constants')
 
 const PORT = process.env.PORT || 5000
-
 
 // Initialization
 const app = express()
 const server = http.Server(app)
 const io = socketIO(server)
-
-const game = new Game()
 
 app.set('port', PORT)
 app.use('/static', express.static(path.join(__dirname + '/static')))
@@ -47,7 +43,6 @@ io.on('connection', socket => {
 
     socket.on(Constants.SOCKET_NEW_PLAYER, function () {
         console.log("server - new player");
-        game.addNewPlayer("Robot-" + socket, socket)
         players[socket.id] = {
             x: 300,
             y: 300
@@ -69,7 +64,5 @@ io.on('connection', socket => {
 })
 
 setInterval(() => {
-    //io.sockets.emit('state', players)
-    game.update()
-    game.sendState()
+    io.sockets.emit('state', players)
 }, 1000 / 60)
