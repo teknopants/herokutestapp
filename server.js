@@ -23,13 +23,6 @@ app.use('/static', express.static(path.join(__dirname + '/static')))
 app.get('/', (request, response) => {
     response.sendFile(path.join(__dirname, 'static/index.html'))
 })
-app.listen(PORT, () => console.log(`Listening on ${PORT}`))
-
-// Starts the server.
-server.listen(PORT, function () {
-    console.log('Starting server on port ' + PORT)
-})
-
 
 // Add the WebSocket handlers
 var players = {}
@@ -65,3 +58,9 @@ io.on('connection', socket => {
 setInterval(() => {
     io.sockets.emit('state', players)
 }, 1000 / 60)
+
+// Starts the server.
+server.listen(PORT, () => {
+    // eslint-disable-next-line no-console
+    console.log(`Starting server on port ${PORT}`)
+})
