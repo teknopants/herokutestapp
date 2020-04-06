@@ -59,7 +59,7 @@ setInterval(() => {
     io.sockets.emit('state', players)
 }, 1000 / 60)
 
-// Starts the server.
+// Starts the server./
 server.listen(PORT, () => {
     // eslint-disable-next-line no-console
     console.log(`Starting server on port ${PORT}`)
