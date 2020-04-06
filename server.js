@@ -31,6 +31,7 @@ io.on('connection', socket => {
     socket.on('disconnect', function () {
         console.log("server - player disconnected");
         // remove disconnected player
+        delete players[socket.id]
     })
 
     socket.on("new player", function () {
