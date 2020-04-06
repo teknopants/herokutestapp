@@ -43,11 +43,13 @@ io.on('connection', socket => {
 
     socket.on('playerPosition', function (position, speed, timeStamp) {
         var _currentTime = (new Date()).getTime()
-        var _timeElapsed = (_currentTime - timeStamp) / 500
+        var _timeElapsed = (_currentTime - timeStamp) / 1000;
+        var _timeBoostFactor = 3;
+        var _delta = _timeElapsed * _timeBoostFactor;
         var player = players[socket.id] || {}
         var nextPosition = {
-            x: _timeElapsed * speed.x,
-            y: _timeElapsed * speed.y
+            x: _delta * speed.x,
+            y: _delta * speed.y
         }
         player.x = position.x + nextPosition.x
         player.y = position.y + nextPosition.y

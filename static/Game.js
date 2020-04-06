@@ -139,7 +139,7 @@ setInterval(function () {
 
     sendState();
 
-}, 1000 / 60);
+}, 1000 / 120);
 
 // Draw Game
 var canvas = document.getElementById('canvas');
