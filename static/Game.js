@@ -143,24 +143,26 @@ setInterval(function () {
 
 // Draw Game
 var canvas = document.getElementById('canvas');
-canvas.width = 800;
+canvas.width = 1600;
 canvas.height = 600;
 var context = canvas.getContext('2d');
 
 socket.on('state', function (players) {
-    context.clearRect(0, 0, 800, 600);
+    context.clearRect(0, 0, canvas.width, canvas.height);
     context.fillStyle = 'green';
     for (var id in players) {
+        //if (id != socket.id) {
         var player = players[id];
         context.beginPath();
         context.arc(player.x, player.y, 10, 0, 2 * Math.PI);
         context.fill();
+        //}
     }
 
     //local player
     context.fillStyle = 'red';
     context.beginPath();
-    context.arc(playerPosition.x, playerPosition.y, 5, 0, 2 * Math.PI);
+    context.arc(playerPosition.x, playerPosition.y, 9, 0, 2 * Math.PI);
     context.fill();
 });
 
