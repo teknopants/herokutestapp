@@ -1,7 +1,9 @@
-const KEYSTATE_PRESSED = 1;
-const KEYSTATE_HELD = 2;
-const KEYSTATE_RELEASED = -1;
-const KEYSTATE_NONE = 0;
+var goal = {
+    position: {
+        x: -1,
+        y: -1
+    }
+}
 
 const Vector2 = {
     Zero: function () {
@@ -12,6 +14,10 @@ const Vector2 = {
     }
 }
 
+const KEYSTATE_PRESSED = 1;
+const KEYSTATE_HELD = 2;
+const KEYSTATE_RELEASED = -1;
+const KEYSTATE_NONE = 0;
 var keyStates = {
     right: KEYSTATE_NONE,
     left: KEYSTATE_NONE,
@@ -19,26 +25,112 @@ var keyStates = {
     down: KEYSTATE_NONE
 }
 
-var playerSpeed = {
-    x: 0,
-    y: 0
-}
-var playerPosition = {
-    x: Math.random() * 400,
-    y: Math.random() * 400
+var levelSize = {
+    width: 20,
+    height: 20
 }
 
-var timeStamp = (new Date()).getTime();
+var levelWalls = [];
+ClearLevel();
+function ClearLevel() {
+    for (var _x = 0; _x <= 20; _x++) {
+        levelWalls[_x] = []
+        for (var _y = 0; _y <= 20; _y++) {
+            levelWalls[_x][_y] = 0;
+        }
+    }
+}
+
+var winnerID = -1;
+
+const STATE_GAME = 0;
+const STATE_WINNER = 1;
+var state = STATE_GAME;
+
+function ChangeState(_state) {
+    timeElapsed = 0;
+    state = _state;
+    StateMachineStep();
+}
+
+function StateMachineStep() {
+    switch (state) {
+        case STATE_GAME:
+            break;
+
+        case STATE_WINNER:
+            if (timeElapsed > 2) {
+                winnerID = -1;
+                player.dead = false;
+                player.frozen = false;
+                socket.emit('restart_game', socket.id);
+                ChangeState(STATE_GAME);
+            }
+            break;
+    }
+}
+
+// Player Class
+class Player {
+    constructor(x, y) {
+        this.position = {};
+        this.position.x = x;
+        this.position.y = y;
+        this.canMoveTimer = 0;
+        this.dead = false;
+        this.frozen = false;
+    }
+
+    Update(dt) {
+        if (!this.dead && !this.frozen) {
+
+            var _make_wall = true;
+            this.canMoveTimer = Approach(this.canMoveTimer, 0, dt);
+
+            // Move Player
+            if (this.canMoveTimer == 0) {
+                if (VectorMagnitude(inputDirection) > 0.1) {
+                    this.position.x += inputDirection.x;
+                    this.position.y += inputDirection.y;
+                    this.canMoveTimer = .05;
+
+                    this.position.x = Loop(this.position.x, 0, levelSize.width);
+                    this.position.y = Loop(this.position.y, 0, levelSize.height);
+
+                    // check collision against walls
+                    if (levelWalls[this.position.x][this.position.y] == 1) {
+                        this.dead = true;
+                        socket.emit('player_lost', socket.id);
+                    }
+
+                    // touched goal
+                    if (this.position.x == goal.position.x && this.position.y == goal.position.y) {
+                        socket.emit('player_won', socket.id);
+                        _make_wall = false;
+                    }
+                }
+            }
+
+            socket.emit('player_state', this.position, _make_wall);
+        }
+    }
+}
+
+
+// our local player
+var player = new Player(Math.floor(Math.random() * levelSize.width), Math.floor(Math.random() * levelSize.height));
+
+function CurrentTime() {
+    return (new Date()).getTime();
+}
+
+var timeStamp = CurrentTime();
+var timeElapsed = 0;
 
 // Socket Stuff
 var socket = io();
 
 socket.emit('new player');
-
-function sendState() {
-    socket.emit('playerPosition', playerPosition, playerSpeed, (new Date()).getTime());
-}
-
 
 document.addEventListener('keyup', function (event) {
     switch (event.keyCode) {
@@ -85,51 +177,31 @@ function GetTimeDifference() {
     return timeDifference;
 }
 
-document.addEventListener('keyup', function (event) {
-    switch (event.keyCode) {
-        case 65: // A
-            break;
-        case 87: // W
-            break;
-        case 68: // D
-            break;
-        case 83: // S
-            break;
-    }
-});
+var inputDirection = Vector2.Zero();
 
 // Update
 setInterval(function () {
 
-    var _timeDifference = GetTimeDifference();
+    var _dt = (CurrentTime() - timeStamp) / 1000;
+    timeElapsed += _dt;
+    timeStamp = CurrentTime();
 
     // input
-    var _spd = 60 * _timeDifference;
-    var _maxSpd = 10;
-    var _inputDirection = Vector2.Zero();
-
+    inputDirection = Vector2.Zero();
     if (CheckHeld(keyStates.right)) {
-        _inputDirection.x = 1;
+        inputDirection.x = 1;
     }
     if (CheckHeld(keyStates.left)) {
-        _inputDirection.x = -1;
+        inputDirection.x = -1;
     }
     if (CheckHeld(keyStates.up)) {
-        _inputDirection.y = -1;
+        inputDirection.y = -1;
     }
     if (CheckHeld(keyStates.down)) {
-        _inputDirection.y = 1;
+        inputDirection.y = 1;
     }
 
-    // Move Player
-    if (VectorMagnitude(_inputDirection) > 0.1) {
-        console.log("local player moving in direction " + _inputDirection + " with speed " + _spd);
-        playerSpeed = AddMotionVector(playerSpeed, _spd, _inputDirection, _maxSpd);
-    }
-
-    playerPosition.x += playerSpeed.x;
-    playerPosition.y += playerSpeed.y;
-    playerSpeed = Friction(playerSpeed, 1.05);
+    player.Update(_dt);
 
     // process key states
     keyStates.right = ProcessKey(keyStates.right);
@@ -137,36 +209,94 @@ setInterval(function () {
     keyStates.left = ProcessKey(keyStates.left);
     keyStates.down = ProcessKey(keyStates.down);
 
-    sendState();
+    StateMachineStep();
 
 }, 1000 / 60);
 
 
 // Draw Game
 var canvas = document.getElementById('canvas');
-canvas.width = 1600;
-canvas.height = 600;
+canvas.width = 800;
+canvas.height = 800;
 var context = canvas.getContext('2d');
 
-socket.on('state', function (players) {
+socket.on('state', function (players, goalPos, _levelWalls) {
+
+    // update local objects
+    levelWalls = _levelWalls;
+    goal.position = goalPos;
+
+    // render screen
+    var _grid_step = canvas.width / levelSize.width;
     context.clearRect(0, 0, canvas.width, canvas.height);
-    context.fillStyle = 'green';
-    for (var id in players) {
-        var player = players[id];
-        if (id == socket.id) {
-            console.log("ping = " + players[id].ping)
+
+    // Walls
+    for (var _x = 0; _x <= levelSize.width; _x++) {
+        for (var _y = 0; _y <= levelSize.height; _y++) {
+            if (levelWalls[_x][_y] == 1) {
+
+                context.fillStyle = 'black';
+                context.beginPath();
+                context.arc(_x * _grid_step, _y * _grid_step, 16, 0, 2 * Math.PI);
+                context.fill();
+            }
         }
-        context.beginPath();
-        context.arc(player.x, player.y, 10, 0, 2 * Math.PI);
-        context.fill();
+    }
+
+    // other players
+    for (var id in players) {
+        var _player = players[id];
+        context.fillStyle = _player.colorstring;
+
+        if (id != socket.id) {
+            context.beginPath();
+            var _size = 16 + _player.points * 3;
+            if (_player.dead)
+                _size = 17 + _player.points * 3 + Math.random() * 3;
+            if (winnerID == id) {
+                _size += timeElapsed * timeElapsed * 800;
+            }
+            context.arc(_player.x * _grid_step, _player.y * _grid_step, _size, 0, 2 * Math.PI);
+            context.fill();
+        }
     }
 
     //local player
-    context.fillStyle = 'red';
+    var _player = players[socket.id] || {}
+    var _points = _player.points;
+    var _size = 16 + _points * 3;
+    if (player.dead)
+        _size = 17 + _points * 3 + Math.random() * 3;
+    if (winnerID == socket.id) {
+        _size += timeElapsed * timeElapsed * 800;
+    }
+
+    context.fillStyle = _player.colorstring;
     context.beginPath();
-    context.arc(playerPosition.x, playerPosition.y, 9, 0, 2 * Math.PI);
+    context.arc(player.position.x * _grid_step, player.position.y * _grid_step, _size, 0, 2 * Math.PI);
+    context.fill();
+
+    //goal
+    context.fillStyle = 'blue';
+    context.beginPath();
+    context.arc(goal.position.x * _grid_step, goal.position.y * _grid_step, 25 + Math.sin(timeElapsed * 30) * 10 + Math.random(), 0, 2 * Math.PI);
     context.fill();
 });
+
+// when a new round has started
+socket.on('new_round', (players, goalPos) => {
+    player.position = players[socket.id].position;
+    player.dead = false;
+    levelWalls
+    goal.position = goalPos;
+    ClearLevel();
+})
+
+socket.on('total_winner', (_winnerID) => {
+    ChangeState(STATE_WINNER);
+    player.frozen = true;
+    winnerID = _winnerID;
+})
 
 
 function AngleToVector(angle) {
@@ -253,4 +383,26 @@ function CheckNone(keyState) {
 }
 function CheckReleased(keyState) {
     return keyState == KEYSTATE_RELEASED
+}
+
+function Loop(val, min, max) {
+    if (val < min) {
+        val = max;
+    }
+    if (val > max) {
+        val = min;
+    }
+    return val;
+}
+
+function Approach(val, goal, step) {
+    if (val < goal) {
+        val += step;
+        val = Math.min(goal, val);
+    }
+    else {
+        val -= step;
+        val = Math.max(goal, val);
+    }
+    return val;
 }
