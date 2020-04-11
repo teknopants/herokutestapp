@@ -260,67 +260,67 @@ socket.on('state', function (players, goalPos, _levelWalls) {
 
     var _grid_step = canvas.width / levelSize.width;
 
+
+    // Walls
+    for (var _x = 0; _x <= levelSize.width; _x++) {
+        for (var _y = 0; _y <= levelSize.height; _y++) {
+            if (levelWalls[_x][_y] == 1) {
+
+                context.fillStyle = 'black';
+                context.beginPath();
+                context.arc(_x * _grid_step, _y * _grid_step, 16, 0, 2 * Math.PI);
+                context.fill();
+            }
+        }
+    }
+
+    // other players/
+    for (var id in players) {
+        var _player = players[id];
+        context.fillStyle = _player.colorstring;
+
+        if (id != socket.id) {
+            context.beginPath();
+            var _size = 16 + _player.points * 4;
+            if (_player.dead)
+                _size = 17 + _player.points * 4 + Math.random() * 3;
+            if (winnerID == id) {
+                _size += timeElapsed * timeElapsed * 800;
+            }
+            context.arc(_player.x * _grid_step, _player.y * _grid_step, _size, 0, 2 * Math.PI);
+            context.fill();
+
+            context.fillStyle = 'black';
+            context.textAlign = 'center';
+            context.font = 'italic 18pt Calibri';
+            context.fillText(_player.name, _player.x * _grid_step, _player.y * _grid_step - (20 + _player.points * 4) + 2);
+
+            context.fillStyle = _player.colorstring;
+            context.textAlign = 'center';
+            context.font = 'italic 18pt Calibri';
+            context.fillText(_player.name, _player.x * _grid_step, _player.y * _grid_step - (20 + _player.points * 4));
+
+        }
+    }
+
+    //goal
+    context.fillStyle = 'blue';
+    context.beginPath();
+    context.arc(goal.position.x * _grid_step, goal.position.y * _grid_step, 25 + Math.sin(timeElapsed * 30) * 10 + Math.random(), 0, 2 * Math.PI);
+    context.fill();
+
+
+
+    DrawLocalPlayer(context, players, _grid_step);
+
     if (state == STATE_ENTERNAME) {
 
         context.fillStyle = 'black';
         context.textAlign = 'center';
-        context.font = 'italic 18pt Calibri';
+        context.font = 'italic 40pt Calibri';
         context.fillText("Type your name and press enter:", 400, 200 - 20);
         context.fillText(keyboard_string, 400, 400 - 20);
     }
-    else {
-        // Walls
-        for (var _x = 0; _x <= levelSize.width; _x++) {
-            for (var _y = 0; _y <= levelSize.height; _y++) {
-                if (levelWalls[_x][_y] == 1) {
-
-                    context.fillStyle = 'black';
-                    context.beginPath();
-                    context.arc(_x * _grid_step, _y * _grid_step, 16, 0, 2 * Math.PI);
-                    context.fill();
-                }
-            }
-        }
-
-        // other players/
-        for (var id in players) {
-            var _player = players[id];
-            context.fillStyle = _player.colorstring;
-
-            if (id != socket.id) {
-                context.beginPath();
-                var _size = 16 + _player.points * 4;
-                if (_player.dead)
-                    _size = 17 + _player.points * 4 + Math.random() * 3;
-                if (winnerID == id) {
-                    _size += timeElapsed * timeElapsed * 800;
-                }
-                context.arc(_player.x * _grid_step, _player.y * _grid_step, _size, 0, 2 * Math.PI);
-                context.fill();
-
-                context.fillStyle = 'black';
-                context.textAlign = 'center';
-                context.font = 'italic 18pt Calibri';
-                context.fillText(_player.name, _player.x * _grid_step, _player.y * _grid_step - (20 + _player.points * 4) + 2);
-
-                context.fillStyle = _player.colorstring;
-                context.textAlign = 'center';
-                context.font = 'italic 18pt Calibri';
-                context.fillText(_player.name, _player.x * _grid_step, _player.y * _grid_step - (20 + _player.points * 4));
-
-            }
-        }
-
-        //goal
-        context.fillStyle = 'blue';
-        context.beginPath();
-        context.arc(goal.position.x * _grid_step, goal.position.y * _grid_step, 25 + Math.sin(timeElapsed * 30) * 10 + Math.random(), 0, 2 * Math.PI);
-        context.fill();
-
-    }
-
-    DrawLocalPlayer(context, players, _grid_step);
-
     if (state == STATE_WINNER) {
 
         var _winningPlayer = players[winnerID];
