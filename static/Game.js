@@ -43,9 +43,10 @@ function ClearLevel() {
 
 var winnerID = -1;
 
+const STATE_ENTERNAME = -1;
 const STATE_GAME = 0;
 const STATE_WINNER = 1;
-var state = STATE_GAME;
+var state = STATE_ENTERNAME;
 
 function ChangeState(_state) {
     timeElapsed = 0;
@@ -134,41 +135,64 @@ socket.emit('new player');
 
 document.addEventListener('keyup', function (event) {
     switch (event.keyCode) {
-        case 65: // A
+        case 37: // A
             keyStates.left = KEYSTATE_RELEASED;
             break;
-        case 68: // D
-            keyStates.right = KEYSTATE_RELEASED;
-            break;
-        case 87: // W
+        case 38: // W
             keyStates.up = KEYSTATE_RELEASED;
             break;
-        case 83: // S
+        case 39: // D
+            keyStates.right = KEYSTATE_RELEASED;
+            break;
+        case 40: // S
             keyStates.down = KEYSTATE_RELEASED;
             break;
     }
 });
 
+
+var my_name = "";
+var keyboard_string = "";
+
+document.onkeypress = function (e) {
+    e = e || window.event;
+    var charCode = (typeof e.which == "number") ? e.which : e.keyCode;
+    if (charCode) {
+        keyboard_string += String.fromCharCode(charCode);
+        my_name = String(keyboard_string);
+    }
+};
+
 document.addEventListener('keydown', function (event) {
     switch (event.keyCode) {
-        case 65: // A
+        case 37: // A
             if (keyStates.left <= 1)
                 keyStates.left = KEYSTATE_PRESSED;
             break;
-        case 68: // D
-            if (keyStates.right <= 1)
-                keyStates.right = KEYSTATE_PRESSED;
-            break;
-        case 87: // W
+        case 38: // W
             if (keyStates.up <= 1)
                 keyStates.up = KEYSTATE_PRESSED;
             break;
-        case 83: // S
+        case 39: // D
+            if (keyStates.right <= 1)
+                keyStates.right = KEYSTATE_PRESSED;
+            break;
+        case 40: // S
             if (keyStates.down <= 1)
                 keyStates.down = KEYSTATE_PRESSED;
             break;
+        case 13: // ENTER
+            if (state == STATE_ENTERNAME) {
+                my_name = String(keyboard_string);
+                console.log("name input = " + my_name);
+                socket.emit('entered_name', my_name);
+                keyboard_string = "";
+                ChangeState(STATE_GAME);
+            }
+            break;
     }
 });
+
 
 function GetTimeDifference() {
     var currentTime = (new Date()).getTime();
@@ -186,28 +210,33 @@ setInterval(function () {
     timeElapsed += _dt;
     timeStamp = CurrentTime();
 
-    // input
-    inputDirection = Vector2.Zero();
-    if (CheckHeld(keyStates.right)) {
-        inputDirection.x = 1;
-    }
-    if (CheckHeld(keyStates.left)) {
-        inputDirection.x = -1;
-    }
-    if (CheckHeld(keyStates.up)) {
-        inputDirection.y = -1;
-    }
-    if (CheckHeld(keyStates.down)) {
-        inputDirection.y = 1;
-    }
+    if (state == STATE_ENTERNAME) {
 
-    player.Update(_dt);
+    }
+    if (state == STATE_GAME) {
+        // input
+        inputDirection = Vector2.Zero();
+        if (CheckHeld(keyStates.right)) {
+            inputDirection.x = 1;
+        }
+        if (CheckHeld(keyStates.left)) {
+            inputDirection.x = -1;
+        }
+        if (CheckHeld(keyStates.up)) {
+            inputDirection.y = -1;
+        }
+        if (CheckHeld(keyStates.down)) {
+            inputDirection.y = 1;
+        }
 
-    // process key states
-    keyStates.right = ProcessKey(keyStates.right);
-    keyStates.up = ProcessKey(keyStates.up);
-    keyStates.left = ProcessKey(keyStates.left);
-    keyStates.down = ProcessKey(keyStates.down);
+        player.Update(_dt);
+
+        // process key states
+        keyStates.right = ProcessKey(keyStates.right);
+        keyStates.up = ProcessKey(keyStates.up);
+        keyStates.left = ProcessKey(keyStates.left);
+        keyStates.down = ProcessKey(keyStates.down);
+    }
 
     StateMachineStep();
 
@@ -227,60 +256,86 @@ socket.on('state', function (players, goalPos, _levelWalls) {
     goal.position = goalPos;
 
     // render screen
-    var _grid_step = canvas.width / levelSize.width;
     context.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Walls
-    for (var _x = 0; _x <= levelSize.width; _x++) {
-        for (var _y = 0; _y <= levelSize.height; _y++) {
-            if (levelWalls[_x][_y] == 1) {
+    var _grid_step = canvas.width / levelSize.width;
+
+    if (state == STATE_ENTERNAME) {
+
+        context.fillStyle = 'black';
+        context.textAlign = 'center';
+        context.font = 'italic 18pt Calibri';
+        context.fillText("Type your name and press enter:", 400, 200 - 20);
+        context.fillText(keyboard_string, 400, 400 - 20);
+    }
+    else {
+        // Walls
+        for (var _x = 0; _x <= levelSize.width; _x++) {
+            for (var _y = 0; _y <= levelSize.height; _y++) {
+                if (levelWalls[_x][_y] == 1) {
+
+                    context.fillStyle = 'black';
+                    context.beginPath();
+                    context.arc(_x * _grid_step, _y * _grid_step, 16, 0, 2 * Math.PI);
+                    context.fill();
+                }
+            }
+        }
+
+        // other players/
+        for (var id in players) {
+            var _player = players[id];
+            context.fillStyle = _player.colorstring;
+
+            if (id != socket.id) {
+                context.beginPath();
+                var _size = 16 + _player.points * 4;
+                if (_player.dead)
+                    _size = 17 + _player.points * 4 + Math.random() * 3;
+                if (winnerID == id) {
+                    _size += timeElapsed * timeElapsed * 800;
+                }
+                context.arc(_player.x * _grid_step, _player.y * _grid_step, _size, 0, 2 * Math.PI);
+                context.fill();
 
                 context.fillStyle = 'black';
-                context.beginPath();
-                context.arc(_x * _grid_step, _y * _grid_step, 16, 0, 2 * Math.PI);
-                context.fill();
+                context.textAlign = 'center';
+                context.font = 'italic 18pt Calibri';
+                context.fillText(_player.name, _player.x * _grid_step, _player.y * _grid_step - (20 + _player.points * 4) + 2);
+
+                context.fillStyle = _player.colorstring;
+                context.textAlign = 'center';
+                context.font = 'italic 18pt Calibri';
+                context.fillText(_player.name, _player.x * _grid_step, _player.y * _grid_step - (20 + _player.points * 4));
+
             }
         }
+
+        //goal
+        context.fillStyle = 'blue';
+        context.beginPath();
+        context.arc(goal.position.x * _grid_step, goal.position.y * _grid_step, 25 + Math.sin(timeElapsed * 30) * 10 + Math.random(), 0, 2 * Math.PI);
+        context.fill();
+
     }
 
-    // other players
-    for (var id in players) {
-        var _player = players[id];
-        context.fillStyle = _player.colorstring;
+    DrawLocalPlayer(context, players, _grid_step);
 
-        if (id != socket.id) {
-            context.beginPath();
-            var _size = 16 + _player.points * 3;
-            if (_player.dead)
-                _size = 17 + _player.points * 3 + Math.random() * 3;
-            if (winnerID == id) {
-                _size += timeElapsed * timeElapsed * 800;
-            }
-            context.arc(_player.x * _grid_step, _player.y * _grid_step, _size, 0, 2 * Math.PI);
-            context.fill();
-        }
+    if (state == STATE_WINNER) {
+
+        var _winningPlayer = players[winnerID];
+        var _winningPlayerName = _winningPlayer.name;
+        context.fillStyle = 'black';
+        context.textAlign = 'center';
+        context.font = 'bold 40pt Calibri';
+        context.fillText(_winningPlayerName + " wins!", 400, 400);
     }
+    /*
+    context.textAlign = 'center';
+    context.font = 'italic 12pt Calibri';
+    context.fillText(keyboard_string, player.position.x * _grid_step, player.position.y * _grid_step - 40);
+    */
 
-    //local player
-    var _player = players[socket.id] || {}
-    var _points = _player.points;
-    var _size = 16 + _points * 3;
-    if (player.dead)
-        _size = 17 + _points * 3 + Math.random() * 3;
-    if (winnerID == socket.id) {
-        _size += timeElapsed * timeElapsed * 800;
-    }
-
-    context.fillStyle = _player.colorstring;
-    context.beginPath();
-    context.arc(player.position.x * _grid_step, player.position.y * _grid_step, _size, 0, 2 * Math.PI);
-    context.fill();
-
-    //goal
-    context.fillStyle = 'blue';
-    context.beginPath();
-    context.arc(goal.position.x * _grid_step, goal.position.y * _grid_step, 25 + Math.sin(timeElapsed * 30) * 10 + Math.random(), 0, 2 * Math.PI);
-    context.fill();
 });
 
 // when a new round has started
@@ -298,6 +353,33 @@ socket.on('total_winner', (_winnerID) => {
     winnerID = _winnerID;
 })
 
+function DrawLocalPlayer(context, players, _grid_step) {
+    //local player
+    var _player = players[socket.id] || {}
+    var _points = _player.points;
+    var _name = _player.name;
+    var _size = 16 + _points * 4 + 2 + Math.sin(timeElapsed * 40) * 2;
+    if (player.dead)
+        _size = 17 + _points * 4 + Math.random() * 3;
+    if (winnerID == socket.id) {
+        _size += timeElapsed * timeElapsed * 800;
+    }
+
+    context.fillStyle = _player.colorstring;
+    context.beginPath();
+    context.arc(player.position.x * _grid_step, player.position.y * _grid_step, _size, 0, 2 * Math.PI);
+    context.fill();
+
+    context.fillStyle = 'black';
+    context.textAlign = 'center';
+    context.font = 'italic 18pt Calibri';
+    context.fillText(_name, player.position.x * _grid_step, player.position.y * _grid_step - (20 + _points * 4) + 2);
+
+    context.fillStyle = _player.colorstring;
+    context.textAlign = 'center';
+    context.font = 'italic 18pt Calibri';
+    context.fillText(_name, player.position.x * _grid_step, player.position.y * _grid_step - (20 + _points * 4));
+}
 
 function AngleToVector(angle) {
     angle = DegreesToRadians(angle);

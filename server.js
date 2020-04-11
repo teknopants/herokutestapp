@@ -44,7 +44,7 @@ function ClearLevel() {
     }
 }
 
-const pointsToWin = 3;
+const pointsToWin = 10;
 var winnerID = -1;
 
 // Add the WebSocket handlers
@@ -58,13 +58,20 @@ io.on('connection', socket => {
 
     socket.on("new player", function () {
         players[socket.id] = {
-            x: Math.floor(Math.random() * 20),
-            y: Math.floor(Math.random() * 20),
+            x: 0,
+            y: 0,
             dead: false,
             points: 0,
             ping: 0,
-            colorstring: "rgb(" + Math.random() * 255 + "," + Math.random() * 255 + "," + Math.random() * 255 + ")"
+            colorstring: "rgb(" + Math.random() * 255 + "," + Math.random() * 255 + "," + Math.random() * 255 + ")",
+            name: "no name"
         }
+    })
+
+    socket.on('entered_name', (_name) => {
+        var _player = players[socket.id] || {}
+        _player.name = _name;
+        console.log("player entered name : " + String(players[socket.id].name));
     })
 
     socket.on('player_state', function (position, _make_wall) {
