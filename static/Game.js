@@ -49,7 +49,7 @@ function touchUp(e) {
     updatePlayerPos = true;
 }
 function touchMove(e) {
-    userMove(e.touches[0].pageX, e.touches[0].pageY);
+    userMove(e.touches[0].clientX, e.touches[0].clientY);
 }
 
 function mouseDown(e) {
