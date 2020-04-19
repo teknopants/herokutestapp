@@ -23,7 +23,7 @@ app.use('/static', express.static(path.join(__dirname + '/static')))
 app.get('/', (request, response) => {
     response.sendFile(path.join(__dirname, 'static/index.html'))
 })
-
+//
 // Game Variables
 function SetRandomGoalPos() {
     goalPos = {
