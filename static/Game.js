@@ -39,28 +39,52 @@ canvas.width = 800;
 canvas.height = 800;
 var context = canvas.getContext('2d');
 
-function userDown() {
+
+function touchDown(e) {
+    updatePlayerPos = true;
+    touchMove(e);
+}
+function touchUp(e) {
+    touchMove(e);
     updatePlayerPos = true;
 }
-function userUp() {
+function touchMove(e) {
+    userMove(e.touches[0].pageX, e.touches[0].pageY);
+}
+
+function mouseDown(e) {
+    updatePlayerPos = true;
+    mouseMove(e);
+}
+function mouseUp(e) {
+    mouseMove(e);
     updatePlayerPos = false;
 }
-function userMove(e) {
+function mouseMove(e) {
+    userMove(e.pageX, e.pageY);
+}
+
+function userMove(x, y) {
     if (updatePlayerPos) {
-        player_x = e.pageX + e.movementX - context.canvas.offsetLeft;
-        player_y = e.pageY + e.movementY - context.canvas.offsetTop;
+        player_x = x - context.canvas.offsetLeft;
+        player_y = y - context.canvas.offsetTop;
+        // prediction
+        /*
+        player_x += e.movementX;
+        player_y += e.movementY;
+        */
         socket.emit('player_click', player_x, player_y);
     }
 }
 
 var updatePlayerPos = false;
-document.addEventListener('mousedown', userDown);
-document.addEventListener('mouseup', userUp);
-document.addEventListener('mousemove', userMove);
+document.addEventListener('mousedown', mouseDown);
+document.addEventListener('mouseup', mouseUp);
+document.addEventListener('mousemove', mouseMove);
 
-document.addEventListener('touchstart', userDown);
-document.addEventListener('touchend', userUp);
-document.addEventListener('touchmove', userMove);
+document.addEventListener('touchstart', touchDown);
+document.addEventListener('touchend', touchUp);
+document.addEventListener('touchmove', touchMove);
 
 
 socket.on('state', function (playerData) {
@@ -71,8 +95,8 @@ socket.on('state', function (playerData) {
     for (var p in playerData) {
         var player = playerData[p];
         context.fillStyle = player.colorstring;
-        context.fillRect(player.x, player.y, 16, 16);
+        context.fillRect(player.x - 8, player.y - 8, 16, 16);
     }
 
-    context.fillRect(player_x, player_y, 16, 16);
+    context.fillRect(player_x - 8, player_y - 8, 16, 16);
 });
