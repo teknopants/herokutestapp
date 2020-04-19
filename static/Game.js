@@ -1,5 +1,5 @@
-import Controls from './Controls';
-controls = new Controls();
+import * as Controls from './Controls.js';
+Controls.Test("hi");
 
 var player_x = Math.random() * 800;
 var player_y = Math.random() * 800;

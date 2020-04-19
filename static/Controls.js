@@ -4,6 +4,10 @@ export class Controls {
         const KEYSTATES = { PRESSED: 1, HELD: 2, RELEASED: -1, NONE: 0 };
     }
 
+    Test(text) {
+        console.log(text);
+    }
+
     // Key Functions
     ProcessKey(keyState) {
         if (keyState == KEYSTATES.PRESSED) {
