@@ -1,33 +1,35 @@
-export class Controls {
+class Controls {
 
     constructor() {
-        const KEYSTATES = { PRESSED: 1, HELD: 2, RELEASED: -1, NONE: 0 };
+        this.KEYSTATES = { PRESSED: 1, HELD: 2, RELEASED: -1, NONE: 0 };
+        this.click = this.KEYSTATES.NONE;
     }
 
-    Test(text) {
-        console.log(text);
+    Update() {
+        this.ProcessKey(this.click);
     }
 
     // Key Functions
     ProcessKey(keyState) {
-        if (keyState == KEYSTATES.PRESSED) {
-            keyState = KEYSTATES.HELD; // pressed set to held
+        if (keyState == this.KEYSTATES.PRESSED) {
+            keyState = this.KEYSTATES.HELD; // pressed set to held
         }
-        if (keyState == KEYSTATES.RELEASED) {
-            keyState = KEYSTATES.NONE; // released set to nothing
+        if (keyState == this.KEYSTATES.RELEASED) {
+            keyState = this.KEYSTATES.NONE; // released set to nothing
         }
         return keyState;
     }
     CheckPressed(keyState) {
-        return keyState == KEYSTATES.PRESSED
+        return keyState == this.KEYSTATES.PRESSED
     }
     CheckHeld(keyState) {
-        return keyState == KEYSTATES.PRESSED || keyState == KEYSTATES.HELD
+        return keyState == this.KEYSTATES.PRESSED || this.keyState == KEYSTATES.HELD
     }
     CheckNone(keyState) {
-        return keyState == KEYSTATES.NONE
+        return keyState == this.KEYSTATES.NONE
     }
     CheckReleased(keyState) {
-        return keyState == KEYSTATES.RELEASED
+        return keyState == this.KEYSTATES.RELEASED
     }
 }
+export default Controls;

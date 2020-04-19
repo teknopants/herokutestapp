@@ -1,5 +1,5 @@
-import * as Controls from './Controls.js';
-Controls.Test("hi");
+import Controls from './Controls.js';
+var controls = new Controls();
 
 var player_x = Math.random() * 800;
 var player_y = Math.random() * 800;
@@ -9,26 +9,10 @@ var player_y = Math.random() * 800;
 var socket = io();
 socket.emit('new player', player_x, player_y);
 
-
-document.addEventListener('keyup', function (event) {
-    switch (event.keyCode) {
-        case 37: // A
-            keyStates.left = KEYSTATE_RELEASED;
-            break;
-    }
-});
-
-document.addEventListener('keydown', function (event) {
-    switch (event.keyCode) {
-        case 37: // A
-            break;
-    }
-});
-
-
 function CurrentTime() {
     return (new Date()).getTime();
 }
+
 // Update
 var timeStamp = CurrentTime();
 var timeElapsed = 0;
@@ -38,8 +22,13 @@ setInterval(function () {
     timeElapsed += _dt;
     timeStamp = CurrentTime();
 
-}, 1000 / 60);
+    controls.Update();
 
+    if (controls.CheckPressed(controls.click)) {
+        console.log("click pressed");
+    }
+
+}, 1000 / 60);
 
 
 // Draw Game
@@ -47,6 +36,13 @@ var canvas = document.getElementById('canvas');
 canvas.width = 800;
 canvas.height = 800;
 var context = canvas.getContext('2d');
+
+canvas.addEventListener('click', function OnClick(e) {
+    player_x = e.clientX;
+    player_y = e.clientY;
+    console.log("x = " + player_x);
+    socket.emit('player_click', player_x, player_y);
+});
 
 socket.on('state', function (playerData) {
 

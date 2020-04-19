@@ -49,10 +49,10 @@ io.on('connection', socket => {
         console.log("player entered name : " + String(playerData[socket.id].name));
     })
 
-    socket.on('player_state', function (position) {
+    socket.on('player_click', function (x, y) {
         var _player = playerData[socket.id] || {}
-        _player.x = position.x;
-        _player.y = position.y;
+        _player.x = x;
+        _player.y = y;
     })
 
 })
