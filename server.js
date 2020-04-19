@@ -33,16 +33,13 @@ io.on('connection', socket => {
         delete playerData[socket.id]
     })
 
-    /*
-    socket.on("new player", function () {
+
+    socket.on("new player", function (player_x, player_y) {
         playerData[socket.id] = {
-            x: 0,
-            y: 0,
-            dead: false,
-            points: 0,
+            x: player_x,
+            y: player_y,
             ping: 0,
-            colorstring: "rgb(" + Math.random() * 255 + "," + Math.random() * 255 + "," + Math.random() * 255 + ")",
-            name: "no name"
+            colorstring: "rgb(" + Math.random() * 255 + "," + Math.random() * 255 + "," + Math.random() * 255 + ")"
         }
     })
 
@@ -57,7 +54,6 @@ io.on('connection', socket => {
         _player.x = position.x;
         _player.y = position.y;
     })
-    */
 
 })
 
