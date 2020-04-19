@@ -35,8 +35,8 @@ setInterval(function () {
 
 // Draw Game
 var canvas = document.getElementById('canvas');
-canvas.width = 200;
-canvas.height = 200;
+canvas.width = 1080;
+canvas.height = 1920;
 var context = canvas.getContext('2d');
 
 
