@@ -5,19 +5,25 @@
         content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, target-densitydpi=device-dpi" />
     <title>NEW GAME</title>
     <style>
+        body {
+            overscroll-behavior: none;
+        }
+
         canvas {
-            width: 400px;
-            height: 400px;
+            width: 200px;
+            height: 200px;
             border: 1px solid black;
         }
     </style>
+
     <script type="module" src="/static/Controls.js"></script>
     <script src="/static/socket.io/socket.io.js"></script>
     <script type="module" src="/static/Game.js"></script>
+
 </head>
 
 <body>
-    <div style="overscroll-behavior: none">
+    <div>
         <center>
             <canvas id="canvas"></canvas>
         </center>
