@@ -1,11 +1,13 @@
+import Controls from './Controls';
+controls = new Controls();
+
 var player_x = Math.random() * 800;
 var player_y = Math.random() * 800;
 
-
 // Socket Stuff
+//import io from 'socket.io-client';
 var socket = io();
 socket.emit('new player', player_x, player_y);
-
 
 
 document.addEventListener('keyup', function (event) {

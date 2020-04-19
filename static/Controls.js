@@ -1,4 +1,4 @@
-class Controls {
+export class Controls {
 
     constructor() {
         const KEYSTATES = { PRESSED: 1, HELD: 2, RELEASED: -1, NONE: 0 };
