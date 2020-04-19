@@ -97,11 +97,13 @@ socket.on('state', function (playerData) {
     // render screen
     context.clearRect(0, 0, canvas.width, canvas.height);
 
+    var size = 64;
+
     for (var p in playerData) {
         var player = playerData[p];
         context.fillStyle = player.colorstring;
-        context.fillRect(player.x - 8, player.y - 8, 16, 16);
+        context.fillRect(player.x - size / 2, player.y - size / 2, size, size);
     }
 
-    context.fillRect(player_x - 8, player_y - 8, 16, 16);
+    context.fillRect(player_x - size / 2, player_y - size / 2, size, size);
 });
