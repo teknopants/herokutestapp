@@ -61,13 +61,18 @@ function mouseUp(e) {
     updatePlayerPos = false;
 }
 function mouseMove(e) {
-    userMove(e.pageX, e.pageY);
+    userMove(e.clientX, e.clientY);
 }
 
 function userMove(x, y) {
     if (updatePlayerPos) {
-        player_x = x - context.canvas.offsetLeft;
-        player_y = y - context.canvas.offsetTop;
+        var ratio_x = (x / document.documentElement.clientWidth);
+        var ratio_y = (y / document.documentElement.clientHeight);
+        player_x = ratio_x * context.canvas.width;
+        player_y = ratio_y * context.canvas.height;
+        /*
+                player_x = x - context.canvas.offsetLeft;
+                player_y = y - context.canvas.offsetTop;*/
         // prediction
         /*
         player_x += e.movementX;
