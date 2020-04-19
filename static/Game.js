@@ -14,9 +14,11 @@ function CurrentTime() {
 }
 
 // Update
+
 var timeStamp = CurrentTime();
 var timeElapsed = 0;
 setInterval(function () {
+
 
     var _dt = (CurrentTime() - timeStamp) / 1000;
     timeElapsed += _dt;
@@ -37,12 +39,29 @@ canvas.width = 800;
 canvas.height = 800;
 var context = canvas.getContext('2d');
 
-canvas.addEventListener('click', function OnClick(e) {
-    player_x = e.clientX;
-    player_y = e.clientY;
-    console.log("x = " + player_x);
-    socket.emit('player_click', player_x, player_y);
-});
+function userDown() {
+    updatePlayerPos = true;
+}
+function userUp() {
+    updatePlayerPos = false;
+}
+function userMove(e) {
+    if (updatePlayerPos) {
+        player_x = e.pageX + e.movementX - context.canvas.offsetLeft;
+        player_y = e.pageY + e.movementY - context.canvas.offsetTop;
+        socket.emit('player_click', player_x, player_y);
+    }
+}
+
+var updatePlayerPos = false;
+document.addEventListener('mousedown', userDown);
+document.addEventListener('mouseup', userUp);
+document.addEventListener('mousemove', userMove);
+
+document.addEventListener('touchstart', userDown);
+document.addEventListener('touchend', userUp);
+document.addEventListener('touchmove', userMove);
+
 
 socket.on('state', function (playerData) {
 
@@ -54,4 +73,6 @@ socket.on('state', function (playerData) {
         context.fillStyle = player.colorstring;
         context.fillRect(player.x, player.y, 16, 16);
     }
+
+    context.fillRect(player_x, player_y, 16, 16);
 });
