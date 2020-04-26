@@ -40,6 +40,7 @@ setInterval(function () {
 
 function touchDown(e) {
     updatePlayerPos = true;
+    document.body.requestFullscreen();
     touchMove(e);
 }
 function touchUp(e) {
