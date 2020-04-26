@@ -1,6 +1,12 @@
 import Controls from './Controls.js';
 var controls = new Controls();
 
+// Draw Game
+var canvas = document.getElementById('canvas');
+canvas.width = 1920;
+canvas.height = 1080;
+var context = canvas.getContext('2d');
+
 var player_x = Math.random() * 800;
 var player_y = Math.random() * 800;
 
@@ -31,14 +37,6 @@ setInterval(function () {
     }
 
 }, 1000 / 60);
-
-
-// Draw Game
-var canvas = document.getElementById('canvas');
-canvas.width = 1080;
-canvas.height = 1920;
-var context = canvas.getContext('2d');
-
 
 function touchDown(e) {
     updatePlayerPos = true;
